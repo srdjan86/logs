@@ -1,7 +1,7 @@
 import 'log_manager.dart';
 
 /// A function that encodes a given object as a JSON-encodable map.
-typedef ToJsonEncodable = Map<dynamic, dynamic> Function(Object);
+typedef ToJsonEncodable = Map<dynamic, dynamic>? Function(dynamic);
 
 /// Enable (or disable) logging for all events on the given [channel].
 void enableLogging(String channel, {bool enable = true}) {
@@ -20,11 +20,11 @@ void enableLogging(String channel, {bool enable = true}) {
 void log(
   String channel,
   String message, {
-  Map data,
-  DateTime time,
-  ToJsonEncodable toJsonEncodable,
-  int level,
-  StackTrace stackTrace,
+  required Map data,
+  required DateTime time,
+  ToJsonEncodable? toJsonEncodable,
+  required int level,
+  required StackTrace stackTrace,
 }) {
   logManager.log(
     channel,
@@ -38,7 +38,7 @@ void log(
 }
 
 /// Register a logging channel with the given [name] and optional [description].
-void registerLoggingChannel(String name, {String description}) {
+void registerLoggingChannel(String name, {String? description}) {
   logManager.registerChannel(name, description: description);
 }
 
@@ -48,8 +48,7 @@ bool shouldLog(String channel) => logManager.shouldLog(channel);
 class Log {
   final String channel;
 
-  Log(this.channel, {String description}) {
-    assert(channel != null);
+  Log(this.channel, {String? description}) {
     if (!logManager.channelDescriptions.containsKey(channel)) {
       logManager.registerChannel(channel, description: description);
     }
@@ -64,11 +63,11 @@ class Log {
   /// @see [LogManager.log]
   void log(
     String message, {
-    Map data,
-    ToJsonEncodable toJsonEncodable,
-    DateTime time,
-    int level,
-    StackTrace stackTrace,
+    Map? data,
+    ToJsonEncodable? toJsonEncodable,
+    DateTime? time,
+    int? level,
+    StackTrace? stackTrace,
   }) {
     logManager.log(
       channel,

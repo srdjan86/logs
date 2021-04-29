@@ -19,11 +19,11 @@ typedef LogDataCallback = Map Function();
 void debugLog(
   String channel,
   LogMessageCallback messageCallback, {
-  LogDataCallback data,
-  ToJsonEncodable toJsonEncodable,
-  DateTime time,
-  int level,
-  StackTrace stackTrace,
+  required LogDataCallback data,
+  required ToJsonEncodable toJsonEncodable,
+  required DateTime time,
+  required int level,
+  required StackTrace stackTrace,
 }) {
   assert(() {
     log(

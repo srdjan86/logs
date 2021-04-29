@@ -3,13 +3,13 @@ import 'package:test/test.dart';
 
 void main() {
   group('manager tests', () {
-    LogManager manager;
-    String loggedMessage;
-    String loggedChannel;
-    Object loggedData;
-    DateTime loggedTime;
-    int loggedLevel;
-    StackTrace loggedStackTrace;
+    late LogManager manager;
+    late String loggedMessage;
+    late String loggedChannel;
+    Object? loggedData;
+    DateTime? loggedTime;
+    int? loggedLevel;
+    StackTrace? loggedStackTrace;
 
     setUp(() {
       manager = LogManager()
@@ -76,8 +76,8 @@ void main() {
     test('log', () {
       manager.registerChannel('foo');
       manager.enableLogging('foo');
-      final StackTrace testTrace = new StackTrace.fromString('test trace');
-      final DateTime time = new DateTime.now();
+      final testTrace = StackTrace.fromString('test trace');
+      final time = DateTime.now();
       manager.log(
         'foo',
         'bar',

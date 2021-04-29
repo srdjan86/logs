@@ -14,10 +14,10 @@ final LogManager logManager = LogManager()..addListener(_sendToDeveloperLog);
 void _sendToDeveloperLog(
   String channel,
   String message,
-  Object data,
-  DateTime time,
-  int level,
-  StackTrace stackTrace,
+  Object? data,
+  DateTime? time,
+  int? level,
+  StackTrace? stackTrace,
 ) {
   developer.log(
     message,
@@ -32,10 +32,10 @@ void _sendToDeveloperLog(
 typedef LogListener = void Function(
   String channel,
   String message,
-  Object data,
-  DateTime time,
-  int level,
-  StackTrace stackTrace,
+  Object? data,
+  DateTime? time,
+  int? level,
+  StackTrace? stackTrace,
 );
 
 typedef _ServiceExtensionCallback = Future<Map<String, dynamic>> Function(
@@ -66,14 +66,14 @@ class LoggingException extends Error implements Exception {
 /// * To query channel enablement, use [shouldLog].
 class LogManager {
   // Track initialization state to ensure no double VM service registrations.
-  static bool _initialized;
-  Map<String, String> _channelDescriptions = <String, String>{};
-  Set<String> _enabledChannels = Set<String>();
+  static bool _initialized = false;
+  final Map<String, String?> _channelDescriptions = {};
+  final Set<String> _enabledChannels = <String>{};
   final List<LogListener> _logListeners = <LogListener>[];
-  StreamController<String> _channelAddedBroadcaster =
-      new StreamController.broadcast();
-  StreamController<String> _channelEnabledBroadcaster =
-      new StreamController.broadcast();
+  final StreamController<String> _channelAddedBroadcaster =
+      StreamController.broadcast();
+  final StreamController<String> _channelEnabledBroadcaster =
+      StreamController.broadcast();
 
   final LinkedHashSet<_ChannelInstallHandler> _channelInstallHandlers =
       LinkedHashSet<_ChannelInstallHandler>();
@@ -90,9 +90,9 @@ class LogManager {
   }
 
   /// A map of channels to channel descriptions.
-  Map<String, String> get channelDescriptions => _channelDescriptions;
+  Map<String, String?> get channelDescriptions => _channelDescriptions;
 
-  void addListener(LogListener listener) {
+  void addListener(LogListener? listener) {
     if (listener != null && !_logListeners.contains(listener)) {
       _logListeners.add(listener);
     }
@@ -131,8 +131,8 @@ class LogManager {
 
     _registerServiceExtension(
       name: 'enable',
-      callback: (Map<String, Object> parameters) async {
-        final String channel = parameters['channel'];
+      callback: (Map<String, dynamic> parameters) async {
+        final String? channel = parameters['channel'];
         if (channel != null) {
           if (parameters.containsKey('enabled')) {
             enableLogging(channel, enable: parameters['enabled'] == 'true');
@@ -149,12 +149,12 @@ class LogManager {
     _registerServiceExtension(
       name: 'loggingChannels',
       callback: (Map<String, dynamic> parameters) async => {
-            'value': _channelDescriptions.map(
-                (channel, description) => MapEntry(channel, <String, String>{
-                      'enabled': shouldLog(channel).toString(),
-                      'description': description ?? '',
-                    }))
-          },
+        'value': _channelDescriptions
+            .map((channel, description) => MapEntry(channel, <String, String>{
+                  'enabled': shouldLog(channel).toString(),
+                  'description': description ?? '',
+                }))
+      },
     );
 
     _initialized = true;
@@ -163,26 +163,20 @@ class LogManager {
   void log(
     String channel,
     String message, {
-    Map data,
-    ToJsonEncodable toJsonEncodable,
-    DateTime time,
-    int level = 0,
-    StackTrace stackTrace,
+    Map? data,
+    ToJsonEncodable? toJsonEncodable,
+    DateTime? time,
+    int? level = 0,
+    StackTrace? stackTrace,
   }) {
-    assert(channel != null);
-    if (!shouldLog(channel)) {
-      return;
-    }
-
-    assert(message != null);
-    String encodedData =
+    var encodedData =
         data != null ? json.encode(data, toEncodable: toJsonEncodable) : null;
-    for (int i = 0; i < _logListeners.length; ++i) {
+    for (var i = 0; i < _logListeners.length; ++i) {
       _logListeners[i](channel, message, encodedData, time, level, stackTrace);
     }
   }
 
-  void registerChannel(String name, {String description}) {
+  void registerChannel(String name, {String? description}) {
     if (_channelDescriptions.containsKey(name)) {
       throw LoggingException('a channel named "$name" is already registered');
     }
@@ -191,7 +185,7 @@ class LogManager {
     _channelAddedBroadcaster.add(name);
   }
 
-  void removeListener(LogListener listener) {
+  void removeListener(LogListener? listener) {
     if (listener != null) {
       _logListeners.remove(listener);
     }
@@ -211,19 +205,17 @@ class LogManager {
   /// Registers a service extension method with the given name and a callback to
   /// be called when the extension method is called.
   void _registerServiceExtension({
-    @required String name,
-    @required _ServiceExtensionCallback callback,
+    required String name,
+    required _ServiceExtensionCallback callback,
   }) {
-    assert(name != null);
-    assert(callback != null);
-    final String methodName = 'ext.flutter.logs.$name';
+    final methodName = 'ext.flutter.logs.$name';
     developer.registerExtension(methodName,
         (String method, Map<String, String> parameters) async {
       assert(method == methodName);
 
       dynamic caughtException;
-      StackTrace caughtStack;
-      Map<String, dynamic> result;
+      late StackTrace caughtStack;
+      var result = <String, dynamic>{};
       try {
         result = await callback(parameters);
       } catch (exception, stack) {

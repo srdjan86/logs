@@ -17,7 +17,7 @@ void installHttpChannel() {
 }
 
 Map<String, String> _headersToMap(HttpHeaders headers) {
-  final Map<String, String> map = {};
+  var map = <String, String>{};
   headers.forEach((String name, List<String> values) {
     map[name] = values.join(',');
   });
@@ -29,14 +29,14 @@ void _todo(String msg) {
 }
 
 class LoggingHttpClient implements HttpClient {
-  HttpClient proxy;
+  late HttpClient proxy;
 
   @override
-  String userAgent;
+  String? userAgent;
 
   int _nextRequestId = 1;
 
-  LoggingHttpClient({SecurityContext context}) {
+  LoggingHttpClient({SecurityContext? context}) {
     HttpOverrides.global = null;
     proxy = HttpClient(context: context);
     HttpOverrides.global = _httpOverrides;
@@ -44,14 +44,15 @@ class LoggingHttpClient implements HttpClient {
 
   @override
   set authenticate(
-      Future<bool> Function(Uri url, String scheme, String realm) f) {
+      Future<bool> Function(Uri url, String scheme, String realm)? f) {
     _todo('authenticate');
     proxy.authenticate = f;
   }
 
   @override
   set authenticateProxy(
-    Future<bool> Function(String host, int port, String scheme, String realm) f,
+    Future<bool> Function(String host, int port, String scheme, String realm)?
+        f,
   ) {
     _todo('authenticateProxy');
     proxy.authenticateProxy = f;
@@ -60,27 +61,28 @@ class LoggingHttpClient implements HttpClient {
   @override
   bool get autoUncompress => proxy.autoUncompress;
 
+  @override
   set autoUncompress(bool value) {
     proxy.autoUncompress = value;
   }
 
   @override
   set badCertificateCallback(
-      bool Function(X509Certificate cert, String host, int port) callback) {
+      bool Function(X509Certificate cert, String host, int port)? callback) {
     _todo('badCertificateCallback');
     proxy.badCertificateCallback = callback;
   }
 
   @override
-  Duration get connectionTimeout => proxy.connectionTimeout;
+  Duration? get connectionTimeout => proxy.connectionTimeout;
 
   @override
-  set connectionTimeout(Duration connectionTimeout) {
+  set connectionTimeout(Duration? connectionTimeout) {
     proxy.connectionTimeout = connectionTimeout;
   }
 
   @override
-  set findProxy(String Function(Uri url) f) {
+  set findProxy(String Function(Uri url)? f) {
     _todo('findProxy');
     proxy.findProxy = f;
   }
@@ -94,10 +96,10 @@ class LoggingHttpClient implements HttpClient {
   }
 
   @override
-  int get maxConnectionsPerHost => proxy.maxConnectionsPerHost;
+  int? get maxConnectionsPerHost => proxy.maxConnectionsPerHost;
 
   @override
-  set maxConnectionsPerHost(int maxConnectionsPerHost) {
+  set maxConnectionsPerHost(int? maxConnectionsPerHost) {
     proxy.maxConnectionsPerHost = maxConnectionsPerHost;
   }
 
@@ -142,19 +144,19 @@ class LoggingHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> getUrl(Uri url) {
-    final int id = _nextRequestId++;
-    final String method = 'GET';
+    final id = _nextRequestId++;
+    final method = 'GET';
 
     // #1 • GET https://flutter.io url
     _log.log('#$id • $method $url');
 
-    Future<HttpClientRequest> request = proxy.getUrl(url);
+    var request = proxy.getUrl(url);
     return request.then((HttpClientRequest req) {
       _log.log('#$id • $method $url • request ready',
           data: _headersToMap(req.headers));
 
       req.done.then((HttpClientResponse response) {
-        String len = response.contentLength >= 0
+        var len = response.contentLength >= 0
             ? ' ${response.contentLength} bytes'
             : '';
         _log.log(
@@ -188,17 +190,17 @@ class LoggingHttpClient implements HttpClient {
 
   @override
   Future<HttpClientRequest> openUrl(String method, Uri url) {
-    final int id = _nextRequestId++;
+    final id = _nextRequestId++;
 
     // #1 • GET https://flutter.io • open
     _log.log('#$id • $method $url • open');
 
-    Future<HttpClientRequest> request = proxy.openUrl(method, url);
+    var request = proxy.openUrl(method, url);
     return request.then((HttpClientRequest req) {
       _log.log('#$id • $method $url • request ready');
 
       req.done.then((HttpClientResponse response) {
-        String len = response.contentLength >= 0
+        var len = response.contentLength >= 0
             ? ' ${response.contentLength} bytes'
             : '';
         _log.log(
@@ -249,6 +251,7 @@ class LoggingHttpClient implements HttpClient {
 }
 
 class _HttpOverrides extends HttpOverrides {
-  HttpClient createHttpClient(SecurityContext context) =>
+  @override
+  HttpClient createHttpClient(SecurityContext? context) =>
       LoggingHttpClient(context: context);
 }
