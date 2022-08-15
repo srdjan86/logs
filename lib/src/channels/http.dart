@@ -248,6 +248,19 @@ class LoggingHttpClient implements HttpClient {
     _todo('putUrl');
     return proxy.putUrl(url);
   }
+
+  @override
+  set connectionFactory(
+      Future<ConnectionTask<Socket>> Function(
+              Uri url, String? proxyHost, int? proxyPort)?
+          f) {
+    // TODO: implement connectionFactory
+  }
+
+  @override
+  set keyLog(Function(String line)? callback) {
+    // TODO: implement
+  }
 }
 
 class _HttpOverrides extends HttpOverrides {
